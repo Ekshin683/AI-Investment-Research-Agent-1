@@ -6,7 +6,6 @@ dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
-const agentPath = path.resolve(__dirname, "../../agent/index.js");
 
 export const runResearchService = async (companyName) => {
   try {
@@ -15,13 +14,14 @@ export const runResearchService = async (companyName) => {
     process.env.ALPHA_VANTAGE_API_KEY = process.env.ALPHA_VANTAGE_API_KEY;
     process.env.TWELVE_DATA_API_KEY   = process.env.TWELVE_DATA_API_KEY;
 
-    // Works both locally and on Render
-    const isProd    = process.env.NODE_ENV === "production";
-    const agentPath = isProd
-      ? path.resolve(__dirname, "../../AGENT/index.js")    // Render path
-      : path.resolve(__dirname, "../../../AGENT/index.js"); // Local path
+    console.log("✅ Keys check:");
+    console.log("   Groq:   ", process.env.GROQ_API_KEY?.slice(0, 12));
+    console.log("   Tavily: ", process.env.TAVILY_API_KEY?.slice(0, 12));
 
-    const agentURL = pathToFileURL(agentPath).href;
+    // Use agent folder inside BACKEND — works on both local and Render
+    const agentPath = path.resolve(__dirname, "../../agent/index.js");
+    const agentURL  = pathToFileURL(agentPath).href;
+
     console.log("Loading AGENT from:", agentURL);
 
     const { runInvestmentResearch } = await import(agentURL);
