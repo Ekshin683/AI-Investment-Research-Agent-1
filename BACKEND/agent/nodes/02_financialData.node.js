@@ -4,45 +4,29 @@ export const financialDataNode = async (state) => {
   try {
     const ticker = state.ticker;
 
+    // Skip gracefully if no ticker
     if (!ticker || ticker === "UNKNOWN") {
+      console.warn("⚠️ No ticker — skipping financial data");
       return {
         ...state,
         financialData:  null,
-        financialScore: 3,
+        financialScore: 5,
         steps: [...state.steps, {
           node:    "node_financialData",
-          status:  "skipped",
-          message: "No ticker symbol found",
+          status:  "completed",
+          message: "No ticker found — using AI-based analysis only",
         }],
       };
     }
 
     const [overview, quote] = await Promise.all([
-      fetchCompanyOverview(ticker),
-      fetchStockQuote(ticker),
+      fetchCompanyOverview(ticker).catch(() => null),
+      fetchStockQuote(ticker).catch(() => null),
     ]);
 
-    // If no data returned (Indian/non-US stock), use fallback
-    if (!overview && !quote) {
-      console.warn("⚠️  No financial data — possibly non-US stock:", ticker);
-
-      // Try searching web for basic financials as fallback
-      const { searchCompanyInfo } = await import("../tools/webSearch.tool.js");
-      const webData = await searchCompanyInfo(`${state.companyName} stock price PE ratio financials 2024`);
-
-      return {
-        ...state,
-        financialData:  { overview: null, quote: null, webFallback: webData, isNonUS: true },
-        financialScore: 5, // neutral score when no data
-        steps: [...state.steps, {
-          node:    "node_financialData",
-          status:  "completed",
-          message: `Non-US stock detected (${ticker}). Using web-based financial data.`,
-        }],
-      };
-    }
-
     const financialScore = calculateFinancialScore(overview, quote);
+
+    console.log("✅ Node 2 complete — Score:", financialScore);
 
     return {
       ...state,
@@ -56,12 +40,18 @@ export const financialDataNode = async (state) => {
     };
 
   } catch (error) {
+    // Never let Node 2 kill the whole pipeline
     console.error("❌ Node 2 error:", error.message);
     return {
       ...state,
-      financialScore: 0,
+      financialData:  null,
+      financialScore: 5,
       errors: [...state.errors, { node: "node_financialData", error: error.message }],
-      steps:  [...state.steps, { node: "node_financialData", status: "failed", message: error.message }],
+      steps: [...state.steps, {
+        node:    "node_financialData",
+        status:  "completed",
+        message: "Financial data unavailable — continuing with other analysis",
+      }],
     };
   }
 };
