@@ -4,7 +4,6 @@
 // const API_BASE = "/api";
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
-// ── Start new research ───────────────────────────────────────────────
 export const startResearch = async (companyName) => {
   const response = await fetch(`${API_BASE}/research`, {
     method:  "POST",
@@ -18,14 +17,12 @@ export const startResearch = async (companyName) => {
   return response.json();
 };
 
-// ── Poll for research result ─────────────────────────────────────────
 export const getResearchById = async (id) => {
   const response = await fetch(`${API_BASE}/research/${id}`);
   if (!response.ok) throw new Error("Failed to fetch research result");
   return response.json();
 };
 
-// ── Get all research history ─────────────────────────────────────────
 export const getAllResearch = async () => {
   const response = await fetch(`${API_BASE}/research`);
   if (!response.ok) throw new Error("Failed to fetch research history");

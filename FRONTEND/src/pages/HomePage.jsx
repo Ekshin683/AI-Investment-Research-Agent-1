@@ -55,7 +55,7 @@ Risk Factors: ${researchData.riskFactors?.map(r => r.factor).join(", ") || "N/A"
     setLoading(true);
 
     try {
-      const res = await fetch("/api/research/chat", {
+      const res = await fetch(`${API_BASE}/research/chat`, {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -571,7 +571,7 @@ const HomePage = () => {
     if (pollRef.current) clearInterval(pollRef.current);
     pollRef.current = setInterval(async () => {
       try {
-        const res  = await fetch(`/api/research/${researchId}`);
+        const res = await fetch(`${API_BASE}/research/${researchId}`);
         const json = await res.json();
         const data = json.data;
         setResearch(data);
