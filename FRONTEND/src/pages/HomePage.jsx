@@ -3,7 +3,7 @@ import SearchBar    from "../components/SearchBar";
 import ResearchCard from "../components/ResearchCard";
 import StepProgress from "../components/StepProgress";
 import { startResearch, getAllResearch } from "../api/researchClient";
-
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 // ── Chatbot Component ─────────────────────────────────────────────────
 const Chatbot = ({ researchData }) => {
   const [messages, setMessages] = useState([
