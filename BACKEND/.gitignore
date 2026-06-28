@@ -40,3 +40,5 @@ Thumbs.db
 
 # Nodemon
 nodemon.json
+.env.example
+.gitignore

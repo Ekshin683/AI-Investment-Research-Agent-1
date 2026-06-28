@@ -32,3 +32,4 @@ Thumbs.db
 
 # Test outputs
 coverage/
+.gitignore
