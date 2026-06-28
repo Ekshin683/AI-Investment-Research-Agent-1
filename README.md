@@ -1,4 +1,4 @@
-# 🤖 AI Investment Research Agent
+# AI Investment Research Agent
 
 > An intelligent investment research platform powered by **LangGraph.js** multi-node AI agent pipeline. Enter any company name and receive a comprehensive **INVEST / PASS / HOLD** verdict backed by real financial data, news analysis, sentiment scoring, and risk assessment — all in one terminal-style dashboard.
 
@@ -271,31 +271,6 @@ cd ..
 
 ---
 
-## 🔑 Environment Variables
-
-### `BACKEND/.env`
-```env
-PORT=5000
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/ai-investment
-FRONTEND_URL=http://localhost:5173
-NODE_ENV=development
-
-# AI & Search
-GROQ_API_KEY=gsk_your_groq_key_here
-TAVILY_API_KEY=tvly-your_tavily_key_here
-
-# Financial Data
-ALPHA_VANTAGE_API_KEY=your_alpha_vantage_key_here
-TWELVE_DATA_API_KEY=your_twelve_data_key_here
-```
-
-### `AGENT/.env`
-```env
-GROQ_API_KEY=gsk_your_groq_key_here
-TAVILY_API_KEY=tvly-your_tavily_key_here
-ALPHA_VANTAGE_API_KEY=your_alpha_vantage_key_here
-TWELVE_DATA_API_KEY=your_twelve_data_key_here
-```
 
 ### Where to get API keys
 
