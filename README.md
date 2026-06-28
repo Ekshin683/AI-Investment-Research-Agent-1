@@ -1,475 +1,323 @@
 # AI Investment Research Agent
-
-> An intelligent investment research platform powered by **LangGraph.js** multi-node AI agent pipeline. Enter any company name and receive a comprehensive **INVEST / PASS / HOLD** verdict backed by real financial data, news analysis, sentiment scoring, and risk assessment — all in one terminal-style dashboard.
-
-![Terminal AI Dashboard](https://img.shields.io/badge/Status-Live-00ff9d?style=for-the-badge)
-![LangGraph](https://img.shields.io/badge/LangGraph.js-Agent_Pipeline-purple?style=for-the-badge)
-![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-green?style=for-the-badge)
-![React](https://img.shields.io/badge/React-18-blue?style=for-the-badge)
+### InsideIIM × Altuni AI Labs — Take-Home Assignment
 
 ---
 
-##  Table of Contents
+## Overview
 
-- [Overview](#overview)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Architecture](#architecture)
-- [LangGraph Agent Pipeline](#langgraph-agent-pipeline)
-- [Project Structure](#project-structure)
-- [Installation](#installation)
-- [Environment Variables](#environment-variables)
-- [Running the Application](#running-the-application)
-- [API Endpoints](#api-endpoints)
-- [How It Works](#how-it-works)
-- [Screenshots](#screenshots)
+The **AI Investment Research Agent** is a full-stack application that takes a company name as input, autonomously researches it using a **6-node LangGraph.js agent pipeline**, and delivers a data-driven **INVEST / PASS / HOLD** verdict with detailed reasoning.
+
+**Live Demo:** https://ai-investment-research-agent-1.vercel.app
 
 ---
 
-##  Overview
-
-The **AI Investment Research Agent** is a full-stack MERN application that uses a **LangGraph.js multi-node agent pipeline** to autonomously research any company and deliver a data-driven investment verdict. 
-
-Unlike simple chatbots, this agent runs a structured **6-node pipeline** — each node specializes in one aspect of investment research. The nodes share a typed state object, passing enriched data forward until the final verdict node synthesizes everything into a confident **INVEST**, **PASS**, or **HOLD** decision.
-
----
-
-##  Features
-
--  **Company Resolution** — Automatically identifies ticker symbols for any company worldwide
--  **Real Financial Data** — Fetches live P/E ratio, EPS, profit margins, revenue growth, stock price
--  **News Analysis** — Aggregates and analyzes recent news articles using Tavily search
--  **Sentiment Scoring** — AI-powered market sentiment analysis (Bullish / Bearish / Neutral)
--  **Risk Assessment** — Identifies key risk factors and evaluates competitive moat
--  **Investment Verdict** — Final INVEST / PASS / HOLD with confidence score (0–100%)
--  **AI Analyst Chatbot** — Ask follow-up questions about any research result
--  **Interactive Dashboard** — Clickable score rings, metric boxes, news feed, agent log
--  **Research History** — All past research saved to MongoDB and accessible instantly
--  **Live Progress Tracking** — Real-time step-by-step agent progress as it runs
--  **Global Stock Support** — Works with US, Indian (BSE/NSE), European, and Asian stocks
-
----
-
-##  Tech Stack
-
-### Frontend
-| Technology | Purpose |
-|---|---|
-| React 18 + Vite | UI framework and build tool |
-| Tailwind CSS | Utility-first styling |
-| JetBrains Mono | Terminal-style monospace font |
-| Recharts | Data visualization |
-| Fetch API | HTTP requests and polling |
-
-### Backend
-| Technology | Purpose |
-|---|---|
-| Node.js 20 | Runtime environment |
-| Express.js | REST API framework |
-| MongoDB + Mongoose | Database and ODM |
-| Morgan | HTTP request logging |
-| Helmet | Security headers |
-| Express Validator | Input sanitization |
-| Nodemon | Development auto-restart |
-| Groq SDK | AI chatbot endpoint |
-
-### AI Agent
-| Technology | Purpose |
-|---|---|
-| LangGraph.js | Multi-node agent pipeline orchestration |
-| LangChain Core | Message types and abstractions |
-| Groq (Llama 3.3 70B) | LLM for all AI reasoning nodes |
-| Tavily Search API | Web search for company info and news |
-| Alpha Vantage API | US stock financial data |
-| Twelve Data API | Global stock financial data |
-
----
-
-##  Architecture
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                    FRONTEND (React)                      │
-│   SearchBar → StepProgress → DashboardView + Chatbot    │
-└─────────────────────┬───────────────────────────────────┘
-                      │ REST API (polling every 4s)
-┌─────────────────────▼───────────────────────────────────┐
-│                   BACKEND (Express)                      │
-│   Routes → Controller → Service → MongoDB               │
-└─────────────────────┬───────────────────────────────────┘
-                      │ Dynamic import (file:// URL)
-┌─────────────────────▼───────────────────────────────────┐
-│              AI AGENT (LangGraph.js)                     │
-│                                                          │
-│  ┌──────────┐   ┌──────────┐   ┌──────────┐            │
-│  │ Company  │──▶│Financial │──▶│  News    │            │
-│  │ Search   │   │  Data    │   │ Analysis │            │
-│  └──────────┘   └──────────┘   └──────────┘            │
-│                                      │                   │
-│  ┌──────────┐   ┌──────────┐   ┌────▼─────┐            │
-│  │ Verdict  │◀──│  Risk    │◀──│Sentiment │            │
-│  │Decision  │   │Assessment│   │ Analysis │            │
-│  └──────────┘   └──────────┘   └──────────┘            │
-│        │                                                 │
-│        ▼                                                 │
-│  INVEST / PASS / HOLD + Confidence Score                │
-└─────────────────────────────────────────────────────────┘
-```
-
----
-
-##  LangGraph Agent Pipeline
-
-The heart of the application is a **6-node LangGraph StateGraph** where each node reads from and writes to a shared typed state object.
-
-### Shared State Schema
-```javascript
-{
-  companyName,      // User input
-  companyProfile,   // Resolved from Node 1
-  ticker,           // Stock ticker symbol
-  financialData,    // From Node 2
-  financialScore,   // 0-10 score
-  recentNews,       // From Node 3
-  newsScore,        // 0-10 score
-  sentimentResult,  // From Node 4
-  sentimentScore,   // 0-10 score
-  riskFactors,      // From Node 5
-  riskScore,        // 0-10 score
-  moatAnalysis,     // Competitive advantage
-  verdict,          // INVEST / PASS / HOLD
-  confidenceScore,  // 0-100 overall
-  reasoning,        // Detailed explanation
-  summary,          // 2-3 line summary
-  steps,            // Live progress log
-  errors            // Any node errors
-}
-```
-
-### Node Descriptions
-
-| Node | File | Role | Tools Used |
-|---|---|---|---|
-| **01 Company Search** | `01_companySearch.node.js` | Resolves company name to ticker and profile | Tavily Web Search + Groq LLM |
-| **02 Financial Data** | `02_financialData.node.js` | Fetches real stock price, P/E, EPS, margins | Alpha Vantage / Twelve Data API |
-| **03 News Analysis** | `03_newsAnalysis.node.js` | Pulls and scores recent news articles | Tavily News Search + Groq LLM |
-| **04 Sentiment Analysis** | `04_sentimentAnalysis.node.js` | Scores overall market sentiment | Groq LLM |
-| **05 Risk Assessment** | `05_riskAssessment.node.js` | Identifies risks and competitive moat | Groq LLM |
-| **06 Verdict Decision** | `06_verdictDecision.node.js` | Synthesizes all data into final verdict | Groq LLM |
-
-### Confidence Score Calculation
-```
-Confidence = (Financial × 35%) + (News × 20%) + (Sentiment × 25%) + (Risk × 20%)
-
-INVEST → Confidence ≥ 65%
-HOLD   → Confidence 45–64%
-PASS   → Confidence < 45%
-```
-
----
-
-##  Project Structure
-
-```
-AI-Investment-Research-Agent/
-│
-├── FRONTEND/                          # React + Vite application
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── SearchBar.jsx          # Company name input with quick suggestions
-│   │   │   ├── ResearchCard.jsx       # Full research result display
-│   │   │   ├── VerdictBadge.jsx       # INVEST/PASS/HOLD colored badge
-│   │   │   ├── StepProgress.jsx       # Live 6-node progress tracker
-│   │   │   ├── MetricRow.jsx          # Single financial metric display
-│   │   │   └── ReasoningLog.jsx       # Terminal-style agent log
-│   │   ├── pages/
-│   │   │   ├── HomePage.jsx           # Main dashboard with chatbot
-│   │   │   └── ResultPage.jsx         # Dedicated result page
-│   │   ├── api/
-│   │   │   └── researchClient.js      # API calls + polling logic
-│   │   ├── App.jsx                    # Router setup
-│   │   ├── main.jsx                   # React entry point
-│   │   └── index.css                  # Global styles + CSS variables
-│   ├── tailwind.config.js
-│   ├── vite.config.js                 # Proxy config for API
-│   └── package.json
-│
-├── BACKEND/                           # Node.js + Express API
-│   ├── src/
-│   │   ├── routes/
-│   │   │   └── research.routes.js     # POST /api/research, GET /api/research/:id
-│   │   ├── controllers/
-│   │   │   └── research.controller.js # Request handlers + chatWithAnalyst
-│   │   ├── services/
-│   │   │   └── research.service.js    # Calls AGENT via dynamic import
-│   │   ├── models/
-│   │   │   └── Research.model.js      # Mongoose schema for research results
-│   │   ├── middleware/
-│   │   │   ├── errorHandler.middleware.js    # Global error handler
-│   │   │   └── validateInput.middleware.js   # Input sanitization
-│   │   ├── config/
-│   │   │   └── db.config.js           # MongoDB Atlas connection
-│   │   └── server.js                  # Express app entry point
-│   ├── .env                           # Secret keys (not committed)
-│   ├── .env.example                   # Template for required keys
-│   └── package.json
-│
-└── AGENT/                             # LangGraph.js AI Agent
-    ├── graph/
-    │   ├── investmentGraph.js         # StateGraph definition and compilation
-    │   └── stateSchema.js             # Shared state type definitions
-    ├── nodes/
-    │   ├── 01_companySearch.node.js   # Node 1: Company resolution
-    │   ├── 02_financialData.node.js   # Node 2: Financial data fetching
-    │   ├── 03_newsAnalysis.node.js    # Node 3: News aggregation + analysis
-    │   ├── 04_sentimentAnalysis.node.js # Node 4: Market sentiment
-    │   ├── 05_riskAssessment.node.js  # Node 5: Risk + moat evaluation
-    │   └── 06_verdictDecision.node.js # Node 6: Final INVEST/PASS/HOLD
-    ├── tools/
-    │   ├── webSearch.tool.js          # Tavily search integration
-    │   ├── financials.tool.js         # Alpha Vantage / Twelve Data integration
-    │   └── news.tool.js               # News fetching and formatting
-    ├── prompts/
-    │   └── systemPrompts.js           # All LLM prompt templates
-    ├── index.js                       # Agent entry point + test runner
-    └── package.json
-```
-
----
-
-##  Installation
+## How to Run It
 
 ### Prerequisites
-- Node.js 18+ 
-- MongoDB Atlas account (free at mongodb.com/atlas)
-- API keys (see Environment Variables section)
-
-### Clone the repository
-```bash
-git clone https://github.com/YourUsername/AI-Investment-Research-Agent.git
-cd AI-Investment-Research-Agent
-```
+- Node.js 20+
+- MongoDB Atlas account
+- API keys (listed below)
 
 ### Install dependencies
 
 ```bash
-# Frontend
-cd FRONTEND
-npm install
-cd ..
-
-# Backend
-cd BACKEND
-npm install
-cd ..
-
-# Agent
-cd AGENT
-npm install
-cd ..
+cd FRONTEND && npm install && cd ..
+cd BACKEND && npm install --legacy-peer-deps && cd ..
+cd AGENT && npm install --legacy-peer-deps && cd ..
 ```
 
----
+### Environment Variables
 
+**BACKEND/.env**
+```
+PORT=5000
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/ai-investment
+FRONTEND_URL=http://localhost:5173
+NODE_ENV=development
+GROQ_API_KEY=gsk_your_key_here
+TAVILY_API_KEY=tvly_your_key_here
+ALPHA_VANTAGE_API_KEY=your_key_here
+TWELVE_DATA_API_KEY=your_key_here
+```
 
-### Where to get API keys
+**AGENT/.env**
+```
+GROQ_API_KEY=gsk_your_key_here
+TAVILY_API_KEY=tvly_your_key_here
+ALPHA_VANTAGE_API_KEY=your_key_here
+TWELVE_DATA_API_KEY=your_key_here
+```
+
+### API Keys
 
 | Key | URL | Free Tier |
 |---|---|---|
-| `GROQ_API_KEY` | https://console.groq.com | 100K tokens/day |
-| `TAVILY_API_KEY` | https://tavily.com | 1000 searches/month |
-| `ALPHA_VANTAGE_API_KEY` | https://alphavantage.co | 25 requests/day |
-| `TWELVE_DATA_API_KEY` | https://twelvedata.com | 800 requests/day |
-| `MONGODB_URI` | https://mongodb.com/atlas | 512MB free |
+| GROQ_API_KEY | https://console.groq.com | 100K tokens/day |
+| TAVILY_API_KEY | https://tavily.com | 1000 searches/month |
+| ALPHA_VANTAGE_API_KEY | https://alphavantage.co | 25 req/day |
+| TWELVE_DATA_API_KEY | https://twelvedata.com | 800 req/day |
+| MONGODB_URI | https://mongodb.com/atlas | 512MB free |
 
----
+### Run
 
-##  Running the Application
-
-### Development mode (run in separate terminals)
-
-**Terminal 1 — Backend:**
 ```bash
-cd BACKEND
-npm run dev
-# Server starts on http://localhost:5000
+# Terminal 1 - Backend
+cd BACKEND && npm run dev
+
+# Terminal 2 - Frontend  
+cd FRONTEND && npm run dev
 ```
 
-**Terminal 2 — Frontend:**
-```bash
-cd FRONTEND
-npm run dev
-# App starts on http://localhost:5173
-```
-
-### Test the Agent directly
-```bash
-cd AGENT
-node index.js Apple
-# Runs full 6-node pipeline and prints verdict
-```
-
----
-
-##  API Endpoints
-
-### Research Endpoints
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `POST` | `/api/research` | Start new investment research |
-| `GET` | `/api/research` | Get all research history |
-| `GET` | `/api/research/:id` | Get research result by ID |
-| `DELETE` | `/api/research/:id` | Delete a research record |
-| `POST` | `/api/research/chat` | AI Analyst chatbot |
-
-### Request / Response Examples
-
-**Start Research:**
-```json
-POST /api/research
-{
-  "companyName": "Apple"
-}
-
-Response:
-{
-  "success": true,
-  "message": "Research started",
-  "researchId": "64abc123...",
-  "status": "running"
-}
-```
-
-**Poll for Result:**
-```json
-GET /api/research/64abc123...
-
-Response:
-{
-  "success": true,
-  "data": {
-    "companyName": "Apple",
-    "ticker": "AAPL",
-    "verdict": "INVEST",
-    "confidenceScore": 78,
-    "financialScore": 8,
-    "newsScore": 7,
-    "sentimentScore": 8,
-    "riskScore": 7,
-    "reasoning": "Apple demonstrates strong...",
-    "status": "completed"
-  }
-}
-```
-
-**AI Chatbot:**
-```json
-POST /api/research/chat
-{
-  "message": "Should I invest in Apple?",
-  "researchContext": "Company: Apple (AAPL)..."
-}
-
-Response:
-{
-  "success": true,
-  "reply": "Based on the research data..."
-}
-```
+Open http://localhost:5173
 
 ---
 
 ## How It Works
 
-### 1. User submits a company name
-The frontend sends a `POST /api/research` request with the company name.
+### Architecture
 
-### 2. Backend creates a research record
-A MongoDB document is created with `status: "running"` and the research ID is returned immediately to the frontend.
+```
+FRONTEND (React + Vite)
+    ↓ REST API polling every 4s
+BACKEND (Node.js + Express + MongoDB)
+    ↓ Dynamic import
+AGENT (LangGraph.js 6-node pipeline)
+    ↓
+INVEST / PASS / HOLD verdict
+```
 
-### 3. Agent pipeline runs in background
-The backend service dynamically imports the AGENT and invokes the LangGraph pipeline. The agent runs all 6 nodes sequentially, each enriching the shared state.
+### LangGraph Pipeline
 
-### 4. Frontend polls for updates
-The frontend polls `GET /api/research/:id` every 4 seconds. As each node completes, the step progress UI updates in real time.
+6 nodes share a typed state object:
 
-### 5. MongoDB is updated on completion
-Once all 6 nodes finish, the complete result (verdict, scores, reasoning, financials, news, risks) is saved to MongoDB.
+| Node | Role | Tools |
+|---|---|---|
+| 01 Company Search | Resolves company to ticker + profile | Tavily + Groq |
+| 02 Financial Data | Fetches P/E, EPS, price, margins | Alpha Vantage / Twelve Data |
+| 03 News Analysis | Pulls and scores recent news | Tavily + Groq |
+| 04 Sentiment Analysis | Market sentiment scoring | Groq LLM |
+| 05 Risk Assessment | Risk factors + moat analysis | Groq LLM |
+| 06 Verdict Decision | Final INVEST/PASS/HOLD | Groq LLM |
 
-### 6. Dashboard renders the result
-The frontend displays the full result in a Power BI-style dashboard with clickable score rings, metric boxes, news feed, and the AI Analyst chatbot.
+### Confidence Score Formula
 
-### 7. AI Chatbot answers follow-up questions
-The chatbot sends messages to `POST /api/research/chat` which uses Groq's Llama 3.3 70B model with full research context to answer investment questions.
+```
+Confidence = (Financial x 35%) + (Sentiment x 25%) + (News x 20%) + (Risk x 20%)
 
----
+INVEST  -> Confidence >= 65
+HOLD    -> Confidence 45-64
+PASS    -> Confidence < 45
+```
 
-##  UI Features
+### Tech Stack
 
-### Terminal-style Design
-- Dark navy background (`#070d14`)
-- Neon green accent (`#00ff9d`)
-- JetBrains Mono monospace font throughout
-- Inspired by Bloomberg Terminal and financial data platforms
-
-### Interactive Score Rings
-Click any of the 4 score rings (Financial, News, Sentiment, Risk) to expand a detailed breakdown of what contributed to that score.
-
-### Live Agent Log
-Watch the agent's terminal output in real-time as each node completes, with color-coded success (green) and failure (red) indicators.
-
-### AI Analyst Chatbot
-After research completes, a persistent chatbot panel appears on the right. Ask questions like:
-- "Should I invest in this company?"
-- "What are the biggest risks?"
-- "Explain the confidence score"
-- "What is the price target?"
+- Frontend: React 18, Vite, Tailwind CSS
+- Backend: Node.js, Express, MongoDB + Mongoose, Groq SDK
+- AI: LangGraph.js, Groq Llama 3.3 70B, Tavily Search
+- Deploy: Vercel + Render + MongoDB Atlas
 
 ---
 
-##  Known Limitations
+## Key Decisions and Trade-offs
 
-| Limitation | Details |
+### What I chose and why
+
+**LangGraph over simple LangChain chains**
+- Explicit node-by-node control with shared typed state
+- Each node independently testable and debuggable
+- Clean state flow without prop drilling
+- Trade-off: More setup but far more maintainable at scale
+
+**Groq (Llama 3.3 70B) over OpenAI**
+- Free tier: 100K tokens/day, no billing required
+- Highly capable for structured JSON output
+- Trade-off: Daily token limit of 100K (~15-20 research runs/day)
+
+**Polling over WebSockets**
+- Simpler to implement and debug
+- Works reliably on Vercel + Render
+- Trade-off: 4-second delay vs true real-time
+- Would use SSE with more time
+
+**MongoDB over PostgreSQL**
+- Flexible schema for nested research JSON
+- Easy to store arrays (news, risks) and mixed objects
+- Trade-off: Less suited for complex relational queries
+
+**Dual Financial API (Alpha Vantage + Twelve Data)**
+- Alpha Vantage for US stocks
+- Twelve Data for global stocks (BSE, NSE, LSE)
+- Trade-off: Two APIs to manage with limited free tiers
+
+### What I left out
+
+| Feature | Reason |
 |---|---|
-| **Groq free tier** | 100K tokens/day — runs ~15-20 research sessions |
-| **Alpha Vantage free tier** | US stocks only, 25 req/day |
-| **Indian stocks** | Ticker format required (e.g. `CIPLA.BSE`) |
-| **Research time** | Takes 30–90 seconds per company |
-| **Not financial advice** | This tool is for educational/research purposes only |
+| WebSocket real-time updates | Polling sufficient for 30-90s research |
+| User authentication | Out of scope for assignment |
+| PDF export | Would add with more time |
+| Portfolio comparison | Future feature |
+| Crypto support | Different data sources needed |
 
 ---
 
-##  Future Improvements
+## Example Runs
 
-- [ ] Portfolio tracking across multiple companies
-- [ ] Historical research comparison
-- [ ] Email alerts for verdict changes
-- [ ] PDF export of research reports
-- [ ] Real-time stock price websocket
-- [ ] Support for crypto assets
-- [ ] Multi-language support
+### Microsoft (MSFT)
+```
+Verdict:         INVEST
+Confidence:      73.5%
+Financial Score: 9/10
+News Score:      3/10
+Sentiment:       8/10 - Bullish
+Risk Score:      8/10
+
+Reasoning: Microsoft demonstrates exceptional financial health
+with strong profit margins driven by Azure cloud and AI integration.
+Despite mixed recent news, bullish market sentiment and analyst buy
+consensus support positive long-term outlook. Wide competitive moat
+through enterprise software lock-in provides strong downside protection.
+
+Key Strengths: Azure dominance, AI integration, enterprise moat
+Key Risks: Regulatory scrutiny, OpenAI dependency, valuation premium
+```
+
+### Amazon (AMZN)
+```
+Verdict:         INVEST
+Confidence:      73.25%
+Financial Score: 7/10
+News Score:      6/10
+Sentiment:       7.5/10 - Bullish
+Risk Score:      8/10
+
+Reasoning: Amazon strong financials and innovative technologies make
+it a leader in consumer cyclical. With bullish sentiment and analyst
+buy consensus, well-positioned for growth. Wide moat from AWS and
+logistics network supports the investment decision.
+
+Key Strengths: AWS dominance, Prime ecosystem, logistics network
+Key Risks: Regulatory pressure, thin retail margins, labor costs
+```
+
+### Tesla (TSLA)
+```
+Verdict:         HOLD
+Confidence:      51%
+Financial Score: 5/10
+News Score:      4/10
+Sentiment:       5/10 - Neutral
+Risk Score:      6/10
+
+Reasoning: Tesla faces mixed signals with strong EV brand leadership
+but increasing competition and margin pressure. Negative news
+sentiment due to price cuts and demand concerns. High beta and
+elevated risk profile. Wait for better entry point.
+
+Key Strengths: EV brand leadership, Supercharger network
+Key Risks: CEO distraction, margin compression, Chinese competition
+```
+
+### CIPLA (Indian Stock - BSE/NSE)
+```
+Verdict:         HOLD
+Confidence:      56%
+Financial Score: 5/10
+News Score:      7/10
+Sentiment:       7/10 - Bullish
+Risk Score:      7/10
+
+Note: Indian stocks have limited financial data on free API tiers.
+Analysis relies more on news and AI reasoning for non-US stocks.
+```
 
 ---
 
-##  Disclaimer
+## What I Would Improve With More Time
 
-> This application is for **educational and research purposes only**. It does not constitute financial advice. Always consult a qualified financial advisor before making investment decisions. The AI verdicts are based on publicly available data and AI analysis which may be incomplete or inaccurate.
+### Technical
+1. **SSE streaming** - Replace polling with Server-Sent Events for true real-time updates
+2. **Yahoo Finance API** - Better global stock coverage especially Indian BSE/NSE
+3. **Redis caching** - Cache frequently researched companies to reduce API calls
+4. **Parallel nodes** - Run News and Financial nodes in parallel to cut time from 60s to 30s
+5. **Retry logic** - Exponential backoff on API failures
+6. **Zod validation** - Strict schema validation on all LLM JSON outputs
+
+### Product
+7. **Portfolio analysis** - Research and compare multiple companies
+8. **Email alerts** - Notify when company verdict changes
+9. **PDF report** - Professional investment research PDF export
+10. **Watchlist** - Save and monitor companies
+11. **Historical verdicts** - Track how confidence score changes over time
+
+### AI
+12. **Agent memory** - Remember previous research for the same company
+13. **SEC filing analysis** - Add 10-K/10-Q parsing node for US stocks
+14. **Multiple model comparison** - Run same research with different LLMs
 
 ---
 
-##  License
+## Project Structure
 
-MIT License — feel free to use, modify, and distribute.
+```
+AI-Investment-Research-Agent/
+├── FRONTEND/                    # React + Vite
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── SearchBar.jsx
+│   │   │   ├── VerdictBadge.jsx
+│   │   │   ├── StepProgress.jsx
+│   │   │   ├── MetricRow.jsx
+│   │   │   └── ReasoningLog.jsx
+│   │   ├── pages/
+│   │   │   └── HomePage.jsx     # Main dashboard + chatbot
+│   │   └── api/
+│   │       └── researchClient.js
+│   └── package.json
+│
+├── BACKEND/                     # Node.js + Express
+│   ├── src/
+│   │   ├── routes/research.routes.js
+│   │   ├── controllers/research.controller.js
+│   │   ├── services/research.service.js
+│   │   ├── models/Research.model.js
+│   │   ├── middleware/
+│   │   ├── config/db.config.js
+│   │   └── server.js
+│   ├── agent/                   # AGENT embedded for deployment
+│   └── package.json
+│
+└── AGENT/                       # LangGraph.js Pipeline
+    ├── graph/
+    │   ├── investmentGraph.js   # StateGraph definition
+    │   └── stateSchema.js       # Shared state types
+    ├── nodes/
+    │   ├── 01_companySearch.node.js
+    │   ├── 02_financialData.node.js
+    │   ├── 03_newsAnalysis.node.js
+    │   ├── 04_sentimentAnalysis.node.js
+    │   ├── 05_riskAssessment.node.js
+    │   └── 06_verdictDecision.node.js
+    ├── tools/
+    │   ├── webSearch.tool.js
+    │   ├── financials.tool.js
+    │   └── news.tool.js
+    ├── prompts/systemPrompts.js
+    └── index.js
+```
 
 ---
 
-<div align="center">
-  <p>Built with  using LangGraph.js, React, Node.js, and MongoDB</p>
-  <p>
-    <a href="https://langchain.com/langgraph">LangGraph</a> •
-    <a href="https://groq.com">Groq</a> •
-    <a href="https://tavily.com">Tavily</a> •
-    <a href="https://mongodb.com/atlas">MongoDB Atlas</a>
-  </p>
-</div>
+## Deployment
+
+| Service | Platform | URL |
+|---|---|---|
+| Frontend | Vercel | https://ai-investment-research-agent-1.vercel.app |
+| Backend | Render | https://ai-investment-research-agent-1-qpb6.onrender.com |
+| Database | MongoDB Atlas | Cloud hosted |
+
+---
+
+## Disclaimer
+
+This tool is for educational and research purposes only and does not constitute financial advice.
