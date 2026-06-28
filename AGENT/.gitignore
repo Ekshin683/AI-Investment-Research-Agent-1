@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Environment variables — NEVER commit these
+.env
+.env.local
+.env.production
+
+# Keep example file
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+logs/
+
+# LangGraph checkpoints/cache
+.langgraph/
+checkpoints/
+
+# Runtime
+pids/
+*.pid
+
+# Editor
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test outputs
+coverage/
