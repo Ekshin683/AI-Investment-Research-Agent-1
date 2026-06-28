@@ -1,12 +1,9 @@
-// src/server.js
-// Express app entry point
-
-import express    from "express";
-import cors       from "cors";
-import morgan     from "morgan";
-import helmet     from "helmet";
-import dotenv     from "dotenv";
-import connectDB  from "./config/db.config.js";
+import express   from "express";
+import cors      from "cors";
+import morgan    from "morgan";
+import helmet    from "helmet";
+import dotenv    from "dotenv";
+import connectDB from "./config/db.config.js";
 import researchRoutes from "./routes/research.routes.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.middleware.js";
 
@@ -15,10 +12,10 @@ dotenv.config();
 const app  = express();
 const PORT = process.env.PORT || 5000;
 
-// ── Connect to MongoDB ────────────────────────────────────────────────
+// Connect MongoDB
 connectDB();
 
-// ── Middleware ────────────────────────────────────────────────────────
+// Middleware
 app.use(helmet());
 app.use(cors({
   origin: [
@@ -33,30 +30,41 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ── Health check route ────────────────────────────────────────────────
-// Root route — for Render health check
+// Root route
 app.get("/", (req, res) => {
   res.status(200).json({
-    success: true,
-    message: "AI Investment Research API",
-    version: "1.0.0",
-    health:  "/api/health",
-    docs:    "/api/research",
+    success:   true,
+    message:   "AI Investment Research API",
+    version:   "1.0.0",
+    endpoints: {
+      health:   "/api/health",
+      research: "/api/research",
+    },
+  });
+});
+
+// Health check
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    success:   true,
+    message:   "AI Investment Research API is running",
+    version:   "1.0.0",
+    timestamp: new Date().toISOString(),
   });
 });
 
 // ── API Routes ────────────────────────────────────────────────────────
-app.use("/api/research", researchRoutes);
+app.use("/api/research", researchRoutes);  // ← THIS LINE IS CRITICAL
 
-// ── Error Handlers ────────────────────────────────────────────────────
+// Error handlers
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-// ── Start Server ──────────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`\n🚀 Server running on http://localhost:${PORT}`);
-  console.log(`📋 Health check: http://localhost:${PORT}/api/health`);
-  console.log(`🔬 Research API: http://localhost:${PORT}/api/research`);
+// Start server
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`\n🚀 Server running on http://0.0.0.0:${PORT}`);
+  console.log(`📋 Health check: http://0.0.0.0:${PORT}/api/health`);
+  console.log(`🔬 Research API: http://0.0.0.0:${PORT}/api/research`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || "development"}\n`);
 });
 
