@@ -9,7 +9,7 @@
 
 ---
 
-## 📋 Table of Contents
+##  Table of Contents
 
 - [Overview](#overview)
 - [Features](#features)
@@ -26,7 +26,7 @@
 
 ---
 
-## 🎯 Overview
+##  Overview
 
 The **AI Investment Research Agent** is a full-stack MERN application that uses a **LangGraph.js multi-node agent pipeline** to autonomously research any company and deliver a data-driven investment verdict. 
 
@@ -34,23 +34,23 @@ Unlike simple chatbots, this agent runs a structured **6-node pipeline** — eac
 
 ---
 
-## ✨ Features
+##  Features
 
-- 🔍 **Company Resolution** — Automatically identifies ticker symbols for any company worldwide
-- 📊 **Real Financial Data** — Fetches live P/E ratio, EPS, profit margins, revenue growth, stock price
-- 📰 **News Analysis** — Aggregates and analyzes recent news articles using Tavily search
-- 💭 **Sentiment Scoring** — AI-powered market sentiment analysis (Bullish / Bearish / Neutral)
-- ⚠️ **Risk Assessment** — Identifies key risk factors and evaluates competitive moat
-- 🏛️ **Investment Verdict** — Final INVEST / PASS / HOLD with confidence score (0–100%)
-- 💬 **AI Analyst Chatbot** — Ask follow-up questions about any research result
-- 📈 **Interactive Dashboard** — Clickable score rings, metric boxes, news feed, agent log
-- 🕐 **Research History** — All past research saved to MongoDB and accessible instantly
-- ⚡ **Live Progress Tracking** — Real-time step-by-step agent progress as it runs
-- 🌍 **Global Stock Support** — Works with US, Indian (BSE/NSE), European, and Asian stocks
+-  **Company Resolution** — Automatically identifies ticker symbols for any company worldwide
+-  **Real Financial Data** — Fetches live P/E ratio, EPS, profit margins, revenue growth, stock price
+-  **News Analysis** — Aggregates and analyzes recent news articles using Tavily search
+-  **Sentiment Scoring** — AI-powered market sentiment analysis (Bullish / Bearish / Neutral)
+-  **Risk Assessment** — Identifies key risk factors and evaluates competitive moat
+-  **Investment Verdict** — Final INVEST / PASS / HOLD with confidence score (0–100%)
+-  **AI Analyst Chatbot** — Ask follow-up questions about any research result
+-  **Interactive Dashboard** — Clickable score rings, metric boxes, news feed, agent log
+-  **Research History** — All past research saved to MongoDB and accessible instantly
+-  **Live Progress Tracking** — Real-time step-by-step agent progress as it runs
+-  **Global Stock Support** — Works with US, Indian (BSE/NSE), European, and Asian stocks
 
 ---
 
-## 🛠 Tech Stack
+##  Tech Stack
 
 ### Frontend
 | Technology | Purpose |
@@ -85,7 +85,7 @@ Unlike simple chatbots, this agent runs a structured **6-node pipeline** — eac
 
 ---
 
-## 🏗 Architecture
+##  Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -118,7 +118,7 @@ Unlike simple chatbots, this agent runs a structured **6-node pipeline** — eac
 
 ---
 
-## 🤖 LangGraph Agent Pipeline
+##  LangGraph Agent Pipeline
 
 The heart of the application is a **6-node LangGraph StateGraph** where each node reads from and writes to a shared typed state object.
 
@@ -168,7 +168,7 @@ PASS   → Confidence < 45%
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 AI-Investment-Research-Agent/
@@ -237,7 +237,7 @@ AI-Investment-Research-Agent/
 
 ---
 
-## 🚀 Installation
+##  Installation
 
 ### Prerequisites
 - Node.js 18+ 
@@ -284,7 +284,7 @@ cd ..
 
 ---
 
-## ▶️ Running the Application
+##  Running the Application
 
 ### Development mode (run in separate terminals)
 
@@ -311,7 +311,7 @@ node index.js Apple
 
 ---
 
-## 🔌 API Endpoints
+##  API Endpoints
 
 ### Research Endpoints
 
@@ -380,7 +380,7 @@ Response:
 
 ---
 
-## 💡 How It Works
+## How It Works
 
 ### 1. User submits a company name
 The frontend sends a `POST /api/research` request with the company name.
@@ -405,7 +405,7 @@ The chatbot sends messages to `POST /api/research/chat` which uses Groq's Llama 
 
 ---
 
-## 🎨 UI Features
+##  UI Features
 
 ### Terminal-style Design
 - Dark navy background (`#070d14`)
@@ -428,7 +428,7 @@ After research completes, a persistent chatbot panel appears on the right. Ask q
 
 ---
 
-## ⚠️ Known Limitations
+##  Known Limitations
 
 | Limitation | Details |
 |---|---|
@@ -440,7 +440,7 @@ After research completes, a persistent chatbot panel appears on the right. Ask q
 
 ---
 
-## 🔮 Future Improvements
+##  Future Improvements
 
 - [ ] Portfolio tracking across multiple companies
 - [ ] Historical research comparison
@@ -452,20 +452,20 @@ After research completes, a persistent chatbot panel appears on the right. Ask q
 
 ---
 
-## ⚖️ Disclaimer
+##  Disclaimer
 
 > This application is for **educational and research purposes only**. It does not constitute financial advice. Always consult a qualified financial advisor before making investment decisions. The AI verdicts are based on publicly available data and AI analysis which may be incomplete or inaccurate.
 
 ---
 
-## 📄 License
+##  License
 
 MIT License — feel free to use, modify, and distribute.
 
 ---
 
 <div align="center">
-  <p>Built with ❤️ using LangGraph.js, React, Node.js, and MongoDB</p>
+  <p>Built with  using LangGraph.js, React, Node.js, and MongoDB</p>
   <p>
     <a href="https://langchain.com/langgraph">LangGraph</a> •
     <a href="https://groq.com">Groq</a> •
