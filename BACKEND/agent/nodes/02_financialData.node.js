@@ -1,57 +1,77 @@
+// nodes/02_financialData.node.js
+// Node 2 — Fetches real financial data from Alpha Vantage
+// Simple version — works great for US stocks
+
+import {
+  fetchCompanyOverview,
+  fetchStockQuote,
+  calculateFinancialScore,
+} from "../tools/financials.tool.js";
+
 export const financialDataNode = async (state) => {
   console.log("📊 Node 2: Fetching financial data for —", state.ticker);
 
   try {
     const ticker = state.ticker;
 
-    // Skip gracefully if no ticker
+    // Skip if no ticker found
     if (!ticker || ticker === "UNKNOWN") {
-      console.warn("⚠️ No ticker — skipping financial data");
+      console.warn("⚠️  No ticker available, skipping financial data");
       return {
         ...state,
         financialData:  null,
-        financialScore: 5,
-        steps: [...state.steps, {
-          node:    "node_financialData",
-          status:  "completed",
-          message: "No ticker found — using AI-based analysis only",
-        }],
+        financialScore: 3,
+        steps: [
+          ...state.steps,
+          {
+            node:    "node_financialData",
+            status:  "skipped",
+            message: "No ticker symbol found, skipping financial data",
+          },
+        ],
       };
     }
 
+    // Fetch overview and quote in parallel
     const [overview, quote] = await Promise.all([
-      fetchCompanyOverview(ticker).catch(() => null),
-      fetchStockQuote(ticker).catch(() => null),
+      fetchCompanyOverview(ticker),
+      fetchStockQuote(ticker),
     ]);
 
+    // Calculate financial score
     const financialScore = calculateFinancialScore(overview, quote);
 
-    console.log("✅ Node 2 complete — Score:", financialScore);
+    const financialData = {
+      overview,
+      quote,
+      fetchedAt: new Date().toISOString(),
+    };
+
+    console.log("✅ Node 2 complete — Financial score:", financialScore);
 
     return {
       ...state,
-      financialData:  { overview, quote, fetchedAt: new Date().toISOString() },
+      financialData,
       financialScore,
-      steps: [...state.steps, {
-        node:    "node_financialData",
-        status:  "completed",
-        message: `Financial data fetched. Score: ${financialScore}/10`,
-      }],
+      steps: [
+        ...state.steps,
+        {
+          node:    "node_financialData",
+          status:  "completed",
+          message: `Financial data fetched. Score: ${financialScore}/10`,
+        },
+      ],
     };
-
   } catch (error) {
-    // Never let Node 2 kill the whole pipeline
     console.error("❌ Node 2 error:", error.message);
     return {
       ...state,
-      financialData:  null,
-      financialScore: 5,
+      financialScore: 0,
       errors: [...state.errors, { node: "node_financialData", error: error.message }],
-      steps: [...state.steps, {
-        node:    "node_financialData",
-        status:  "completed",
-        message: "Financial data unavailable — continuing with other analysis",
-      }],
+      steps: [
+        ...state.steps,
+        { node: "node_financialData", status: "failed", message: error.message },
+      ],
     };
   }
 };
